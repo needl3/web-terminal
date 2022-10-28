@@ -1,0 +1,31 @@
+:root{
+    --inputFontSize: 1em;
+    --inputFontColor: #17ca17;
+    --promptColor: #aaaaaa;
+    --unicodeColor: #075;
+}
+.prompt-item{
+    color: var(--unicodeColor);
+    padding: 0;
+    font-size: var(--inputFontSize);
+    input{
+        font-size: inherit;
+        color: var(--promptColor);
+    }
+    .command-area{
+        outline: none;
+        border: none;
+    }
+    margin: 0;
+}
+.prompt-item-container{
+    .response-area{
+        margin-top: 0;
+        color: var(--promptColor);
+        font-size: .9rem;
+        padding: 0 0 0 .7rem;
+        > p{
+            margin: 0;
+        }
+    }
+}
