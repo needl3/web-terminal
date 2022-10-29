@@ -38,9 +38,9 @@ export default function Prompt({ handleUpdate, historyItem, currentState }) {
                 />
             </p>
             {historyItem !== undefined && (
-                <p className="response-area">
+                <div className="response-area">
                     <FormattedResponse message={historyItem.response} />
-                </p>
+                </div>
             )}
         </div>
     );

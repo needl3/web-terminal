@@ -1,45 +1,52 @@
 {
-    "name": "web-terminal",
-    "version": "1.0.0",
-    "description": "Terminal emulation for browser",
-    "main": "webpack.config.js",
-    "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "build": "webpack",
-        "start:dev": "webpack serve --mode development"
-    },
-    "babel": {
-        "presets": [
-            "@babel/preset-env",
-			["@babel/preset-react", {"runtime": "automatic"}]
-        ]
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/needl3/web-terminal.git"
-    },
-    "author": "needl3",
-    "license": "ISC",
-    "bugs": {
-        "url": "https://github.com/needl3/web-terminal/issues"
-    },
-    "homepage": "https://github.com/needl3/web-terminal#readme",
-    "dependencies": {
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0"
-    },
-    "devDependencies": {
-        "@babel/cli": "^7.19.3",
-        "@babel/core": "^7.19.6",
-        "@babel/preset-env": "^7.19.4",
-        "@babel/preset-react": "^7.18.6",
-        "babel-loader": "^9.0.0",
-        "css-loader": "^6.7.1",
-        "html-webpack-plugin": "^5.5.0",
-        "sass-loader": "^13.1.0",
-        "style-loader": "^3.3.1",
-        "webpack": "^5.74.0",
-        "webpack-cli": "^4.10.0",
-        "webpack-dev-server": "^4.11.1"
-    }
+	"name": "web-terminal",
+	"version": "1.0.0",
+	"description": "Terminal emulation for browser",
+	"main": "webpack.config.js",
+	"scripts": {
+		"test": "echo \"Error: no test specified\" && exit 1",
+		"build": "webpack",
+		"start:dev": "webpack serve --mode development"
+	},
+	"babel": {
+		"presets": [
+			"@babel/preset-env",
+			[
+				"@babel/preset-react",
+				{
+					"runtime": "automatic"
+				}
+			]
+		]
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/needl3/web-terminal.git"
+	},
+	"author": "needl3",
+	"license": "ISC",
+	"bugs": {
+		"url": "https://github.com/needl3/web-terminal/issues"
+	},
+	"homepage": "https://github.com/needl3/web-terminal#readme",
+	"dependencies": {
+		"path-browserify": "^1.0.1",
+		"react": "^18.2.0",
+		"react-dom": "^18.2.0"
+	},
+	"devDependencies": {
+		"@babel/cli": "^7.19.3",
+		"@babel/core": "^7.19.6",
+		"@babel/preset-env": "^7.19.4",
+		"@babel/preset-react": "^7.18.6",
+		"babel-loader": "^9.0.0",
+		"css-loader": "^6.7.1",
+		"html-webpack-plugin": "^5.5.0",
+		"sass-loader": "^13.1.0",
+		"stream": "^0.0.2",
+		"style-loader": "^3.3.1",
+		"webpack": "^5.74.0",
+		"webpack-cli": "^4.10.0",
+		"webpack-dev-server": "^4.11.1"
+	}
 }
