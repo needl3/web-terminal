@@ -5,6 +5,8 @@ import Prompt from "./components/Prompt";
 
 import exec from "./utils/virtualFS/bin";
 
+const fileSystem  = require("./utils/fileSystem")
+
 const visibleHistory = 0;
 
 function parseCommand(command) {
@@ -17,7 +19,7 @@ function parseCommand(command) {
 
 function execute(state, action) {
     const parsedCommand = parseCommand(action.command);
-    const response = exec(parsedCommand.bin, parsedCommand.args, {user: state.user, cwd: state.cwd})
+    const response = exec(parsedCommand.bin, parsedCommand.args, {user: state.user, cwd: state.cwd, fs:state.fs})
     const finalState = {...state, ...response.newState}
     //
     // Hacky way, please improve it later
@@ -37,6 +39,7 @@ function App() {
         user: "siyo",
         cwd: "~",
         history: [],
+		fs: new fileSystem()
     });
     return (
         <div className="terminal-container">
