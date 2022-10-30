@@ -6,7 +6,7 @@ Regarding Permissions:
 
 // Register you system binaries here to list in ls
 // Blame fs for browser for this inconvenience
-const sysBinaries = ["ls", "clear", "whoami"];
+const sysBinaries = ["ls", "clear", "whoami", "mkdir"];
 
 class FileSystem {
 	constructor() {
@@ -19,7 +19,7 @@ class FileSystem {
 					permissions: "drwxr-x",
 				},
 				children: {
-					parent: "/"
+					parent: "/",
 				},
 			},
 		};
@@ -83,11 +83,12 @@ class FileSystem {
 				.split("/")
 				.filter((i) => i !== "");
 			let parentNode = _r;
-			absolutePath.forEach((node) => {
+			for (let i = 0; i < absolutePath.length; i++) {
+				let node = absolutePath[i];
 				if (Object.keys(parentNode.children).includes(node)) {
 					parentNode = parentNode.children[`${node}`];
 				} else {
-					if (node === absolutePath.at(-1)) {
+					if (i === absolutePath.length - 1) {
 						if (!dir) {
 							parentNode.children[`${node}`] = {
 								properties: {
@@ -103,19 +104,21 @@ class FileSystem {
 									permissions: "drwxr--",
 								},
 								children: {
-									parent:"/"+absolutePath.join("/")+"/",
+									parent: "/" + absolutePath.join("/") + "/",
 								},
 							};
 						}
+						return 0;
 					} else {
 						throw Error(
 							`Invalid path. ${node} Directory doesn't exist`
 						);
 					}
 				}
-			});
+			}
 		} catch (e) {
 			console.log(e);
+			return 1;
 		}
 	}
 	getBinaryString(number) {
