@@ -73,7 +73,7 @@ class FileSystem {
 		return "/" + cwd.join("/");
 	}
 
-	makeNode({ cwd, path, dir, user, content }) {
+	makeNode({ cwd, path, dir, user}) {
 		//
 		// No permission check implemented
 		//
@@ -95,7 +95,7 @@ class FileSystem {
 									owner: user,
 									permissions: "-rw-r--",
 								},
-								content: content,
+								content: "",
 							};
 						} else {
 							parentNode.children[`${node}`] = {

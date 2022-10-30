@@ -12,6 +12,7 @@ export default function exec(bin, argv, state){
     try {
         finalResponse = require(`./${bin}`)(argv, state);
     } catch (e) {
+		console.log(e)
         finalResponse = { code: 1, message: bin+": Command not found" };
     }
     return finalResponse;
