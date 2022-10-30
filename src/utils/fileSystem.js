@@ -19,7 +19,7 @@ class FileSystem {
 					permissions: "drwxr-x",
 				},
 				children: {
-					parent: "/",
+					parent: "/"
 				},
 			},
 		};
@@ -54,32 +54,32 @@ class FileSystem {
 			});
 		});
 	}
-	createAbsolutePath(cwd, path) {
+	createAbsolutePath(cwd, path, user) {
+		// Resolve cwd
+		cwd = cwd
+			.replace("~", "/home/" + user)
+			.split("/")
+			.filter((i) => i !== "");
+
+		// Resolve path
+		path = path.replace("~", "/home/" + user + "/");
 		if (path[0] === "/") return path;
-		else {
-			if (path[0] === "~")
-				return "/home/Oxsiyo/" + path.split("/").slice(1);
-
-			cwd = cwd.split("/").slice(0, -1);
-			path = path.split("/");
-
-			path.forEach((p) => {
-				if (p === ".." && cwd.length > 1) cwd.pop();
-				else if (p !== "" && p !== ".." && p !== ".") cwd.push(p);
+		path.split("/")
+			.filter((i) => i !== "")
+			.forEach((node) => {
+				if (node === "..") cwd.pop();
+				else if (node !== ".") cwd.push(node);
 			});
-
-			if (cwd[-1] !== "") cwd.push("");
-
-			return cwd.join("/");
-		}
+		return "/" + cwd.join("/");
 	}
+
 	makeNode({ cwd, path, dir, user, content }) {
 		//
 		// No permission check implemented
 		//
 		try {
 			const _r = this.getRoot()["/"];
-			const absolutePath = this.createAbsolutePath(cwd, path)
+			const absolutePath = this.createAbsolutePath(cwd, path, user)
 				.split("/")
 				.filter((i) => i !== "");
 			let parentNode = _r;
@@ -103,7 +103,7 @@ class FileSystem {
 									permissions: "drwxr--",
 								},
 								children: {
-									parent: "/"+absolutePath.join("/")+"/",
+									parent:"/"+absolutePath.join("/")+"/",
 								},
 							};
 						}

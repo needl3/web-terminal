@@ -36,7 +36,7 @@ function execute(state, action) {
 
 function App() {
     const [currentState, dispatch] = useReducer(execute, {
-        user: "siyo",
+        user: "Oxsiyo",
         cwd: "~",
         history: [],
 		fs: new fileSystem()
