@@ -23,6 +23,7 @@ module.exports = (env, argv) => {
 			},
 		},
 		devtool: "inline-source-map",
+		infrastructureLogging: {level: 'error'},
 		module: {
 			rules: [
 				{
