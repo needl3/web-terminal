@@ -6,7 +6,7 @@ Regarding Permissions:
 
 // Register you system binaries here to list in ls
 // Blame fs for browser for this inconvenience
-const sysBinaries = ["ls", "clear", "whoami", "mkdir"];
+const sysBinaries = ["ls", "clear", "whoami", "mkdir", "echo", "cat"] 
 
 class FileSystem {
 	constructor() {

@@ -6,19 +6,13 @@ import Prompt from "./components/Prompt";
 import exec from "./utils/virtualFS/bin";
 
 const fileSystem  = require("./utils/fileSystem")
+const parseArgs = require("./utils/argsParser")
 
 const visibleHistory = 0;
 
-function parseCommand(command) {
-    command = command.split(" ");
-    return {
-        bin: command[0],
-        args: command.slice(1),
-    };
-}
-
 function execute(state, action) {
-    const parsedCommand = parseCommand(action.command);
+	// quotes under quotes, double quotes to close args and escapes are not supported right now
+    const parsedCommand = parseArgs(action.command);
     const response = exec(parsedCommand.bin, parsedCommand.args, {user: state.user, cwd: state.cwd, fs:state.fs})
     const finalState = {...state, ...response.newState}
     //
