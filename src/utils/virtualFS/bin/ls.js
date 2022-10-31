@@ -30,9 +30,6 @@ function ls(argv, state) {
 			let files = [];
 			try {
 				// First fetch last node to begin ls from
-				console.log(
-					state.fs.createAbsolutePath(state.cwd, argv[0], state.user)
-				);
 				for (i of state.fs
 					.createAbsolutePath(state.cwd, argv[0], state.user)
 					.split("/")
