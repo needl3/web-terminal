@@ -5,10 +5,12 @@ import Prompt from "./components/Prompt";
 
 import exec from "./utils/virtualFS/bin";
 
-const fileSystem  = require("./utils/fileSystem")
+const {default: fileSystem}  = require("./utils/fileSystem")
 const parseArgs = require("./utils/argsParser")
+const uuid = require("uuid")
 
 const visibleHistory = 0;
+
 
 function execute(state, action) {
 	// quotes under quotes, double quotes to close args and escapes are not supported right now
@@ -40,17 +42,16 @@ function App() {
             <ul>
                 {currentState.history.slice(-visibleHistory).map((item) => {
                     return (
-                        <li>
-                            <Prompt historyItem={item} key={item.timeStamp} />
+                        <li key={uuid.v4()}>
+                            <Prompt historyItem={item} />
                         </li>
                     );
                 })}
-                <li>
+                <li key={uuid.v4()}>
                     <Prompt
                         handleUpdate={(command, timeStamp) =>
                             dispatch({ command: command, timeStamp: timeStamp })
                         }
-                        key={Date.now()}
                         currentState={{
                             ...currentState,
                             timeStamp: Date.now(),
