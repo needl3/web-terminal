@@ -6,55 +6,63 @@ Regarding Permissions:
 
 // Register you system binaries here to list in ls
 // Blame fs for browser for this inconvenience
-const sysBinaries = ["ls", "clear", "whoami", "mkdir", "echo", "cat", "cd"] 
+const sysBinaries = ["ls", "clear", "whoami", "mkdir", "echo", "cat", "cd"];
 
-class FileSystem {
-	constructor() {
-		// To create a starting point in filesystem
-		// All of the files are children of /
-		let _root = {
-			"/": {
-				properties: {
-					owner: "root",
-					permissions: "drwxr-x",
-				},
-				children: {
-					parent: "/",
-				},
+export default function fileSystem() {
+	// To create a starting point in filesystem
+	// All of the files are children of /
+	let _root = {
+		"/": {
+			properties: {
+				owner: "root",
+				permissions: "drwxr-x",
 			},
-		};
-		this.getRoot = () => _root;
-		this.setRoot = (newRoot) => (_root = newRoot);
+			children: {
+				parent: "/",
+			},
+		},
+	};
+	// Initialize pre-shipped binaries
+	makeNode({
+		user: "root",
+		cwd: "/",
+		path: "bin",
+		dir: true,
+	});
+	sysBinaries.forEach((bin) => {
+		makeNode({
+			user: "root",
+			cwd: "/bin/",
+			path: bin,
+			dir: false,
+		});
+	});
 
-		// Initialize pre-shipped binaries
-		this.makeNode({
-			user: "root",
-			cwd: "/",
-			path: "bin",
-			dir: true,
-		});
-		this.makeNode({
-			user: "root",
-			cwd: "/",
-			path: "home",
-			dir: true,
-		});
-		this.makeNode({
-			user: "root",
-			cwd: "/",
-			path: "home/Oxsiyo",
-			dir: true,
-		});
-		sysBinaries.forEach((bin) => {
-			this.makeNode({
-				user: "root",
-				cwd: "/bin/",
-				path: bin,
-				dir: false,
-			});
-		});
+	// Create home dir for Oxsiyo user(default)
+	makeNode({
+		user: "root",
+		cwd: "/",
+		path: "home",
+		dir: true,
+	});
+	makeNode({
+		user: "root",
+		cwd: "/",
+		path: "home/Oxsiyo",
+		dir: true,
+	});
+
+	// Test file
+	makeNode({
+		user: "root",
+		cwd: "/",
+		path: "home/Oxsiyo/byRoot.txt",
+		dir: false,
+	});
+	function getRoot() {
+		return _root;
 	}
-	createAbsolutePath(cwd, path, user) {
+	function createAbsolutePath(cwd, path, user) {
 		// Resolve cwd
 		cwd = cwd
 			.replace("~", "/home/" + user)
@@ -73,13 +81,10 @@ class FileSystem {
 		return "/" + cwd.join("/");
 	}
 
-	makeNode({ cwd, path, dir, user}) {
-		//
-		// No permission check implemented
-		//
+	function makeNode({ cwd, path, dir, user }) {
 		try {
-			const _r = this.getRoot()["/"];
-			const absolutePath = this.createAbsolutePath(cwd, path, user)
+			const _r = getRoot()["/"];
+			const absolutePath = createAbsolutePath(cwd, path, user)
 				.split("/")
 				.filter((i) => i !== "");
 			let parentNode = _r;
@@ -108,7 +113,7 @@ class FileSystem {
 								},
 							};
 						}
-						return 0;
+						return parentNode.children[`${node}`];
 					} else {
 						throw Error(
 							`Invalid path. ${node} Directory doesn't exist`
@@ -118,10 +123,10 @@ class FileSystem {
 			}
 		} catch (e) {
 			console.log(e);
-			return 1;
+			return undefined;
 		}
 	}
-	getBinaryString(number) {
+	function getBinaryString(number) {
 		if (number > 7) throw Error("Permission bit can't exceed 7");
 		const maxDigits = 3;
 		const binString = [];
@@ -140,7 +145,7 @@ class FileSystem {
 		});
 		return binString.join("");
 	}
-	transformNumericalPermission(number) {
+	function transformNumericalPermission(number) {
 		try {
 			// Remove slice to enable group permissions
 			return getBinaryString(String(number).slice(0, 2));
@@ -148,14 +153,16 @@ class FileSystem {
 			throw Error("Invalid permission type.");
 		}
 	}
-
-	permissionParser(permission) {
+	function permissionParser(permission) {
 		try {
 			transformNumericalPermission(permission);
 		} catch (e) {
 			console.log(e);
 		}
 	}
+	return {
+		getRoot,
+		createAbsolutePath,
+		makeNode,
+	};
 }
-
-module.exports = FileSystem;
