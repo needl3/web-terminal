@@ -4,16 +4,16 @@
         - Always return {newState: Object, code: Int, message: String}
 */
 
-export default function exec(bin, argv, state){
-    let finalResponse= {
-        code: 1,
-        message: "",
-    };
-    try {
-        finalResponse = require(`./${bin}`)(argv, state);
-    } catch (e) {
+function exec(bin, argv, state) {
+	try{
+		return require(`./${bin}`)(argv,state)
+	}catch(e){
 		console.log(e)
-        finalResponse = { code: 1, message: bin+": Command not found" };
-    }
-    return finalResponse;
+		return {
+			code: 1,
+			message: bin + ": Command not found",
+			newState: {}
+		}
+	}
 }
+module.exports = exec;

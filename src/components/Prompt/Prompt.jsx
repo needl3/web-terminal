@@ -1,4 +1,3 @@
-import React from "react";
 import { useState } from "react";
 import "./Prompt.scss";
 
@@ -45,3 +44,4 @@ export default function Prompt({ handleUpdate, historyItem, currentState }) {
         </div>
     );
 }
+

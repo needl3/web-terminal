@@ -2,6 +2,13 @@
 
 ## Known issues
 - CRUD operations on FileSystem shouldn't be done by external binaries. Instead FS should provide it's own api with privilage checks
+- React updating timeStamp every render
+
+## Todos
+- Add modules
+	- curl
+	- rm
+- Add privilage check on CRUD operations in FS
 
 ## How to use
 ### Install

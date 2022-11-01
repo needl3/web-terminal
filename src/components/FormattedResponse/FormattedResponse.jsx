@@ -3,7 +3,7 @@ export default function FormattedResponse({ message }) {
         <>
             {
                 message.split("\n").map(item => {
-                    return <p>{item}</p>
+                    return <p key={Date.now()}>{item}</p>
                 })
             }
         </>
