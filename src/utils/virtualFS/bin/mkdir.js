@@ -6,16 +6,17 @@ function mkdir(argv, state) {
 		Usage: mkdir <path>
 	`;
 	else {
-		if (
+		try{
 			state.fs.makeNode({
 				cwd: state.cwd,
 				path: argv[0],
-				dir: true,
+				file: null,
 				user: state.user,
 			})
-		) {
+		}catch(e) {
+			console.log(e)
 			finalState.code = 1;
-			finalState.message = "Cannot create directory at " + argv[0];
+			finalState.message = e.message
 		}
 	}
 	return finalState;

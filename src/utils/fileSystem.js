@@ -1,13 +1,28 @@
 /*
 Regarding Permissions:
     - groups not implemneted
-    - only use 2 digit numbers for permission
+    - only use 2 digit numbers for permission (owner, others)
 */
 
 // Register you system binaries here to list in ls
 // Blame fs for browser for this inconvenience
 const sysBinaries = ["ls", "clear", "whoami", "mkdir", "echo", "cat", "cd"];
 
+// Templates for empty nodes
+const directoryTemplate = (user, parentNodeName, permission) => {
+	return {
+		properties: { owner: user, permissions: permission || "drwxr-x" },
+		children: {
+			parent: parentNodeName,
+		},
+	};
+};
+const fileTemplate = (user, permission, file) => {
+	return {
+		properties: { owner: user, permissions: permission || "-rw-r--" },
+		content: file || "",
+	};
+};
 export default function fileSystem() {
 	// To create a starting point in filesystem
 	// All of the files are children of /
@@ -27,14 +42,15 @@ export default function fileSystem() {
 		user: "root",
 		cwd: "/",
 		path: "bin",
-		dir: true,
+		file: null,
 	});
 	sysBinaries.forEach((bin) => {
 		makeNode({
 			user: "root",
 			cwd: "/bin/",
 			path: bin,
-			dir: false,
+			file: "<**binary noises**>",
+			permission: "-r-xr-x",
 		});
 	});
 
@@ -43,21 +59,22 @@ export default function fileSystem() {
 		user: "root",
 		cwd: "/",
 		path: "home",
-		dir: true,
+		file: null,
 	});
 	makeNode({
-		user: "root",
+		user: "Oxsiyo",
 		cwd: "/",
 		path: "home/Oxsiyo",
-		dir: true,
-	});
+		file: null,
+		pseudoRoot: true
+	})
 
 	// Test file
 	makeNode({
 		user: "root",
 		cwd: "/",
 		path: "home/Oxsiyo/byRoot.txt",
-		dir: false,
+		file: "This is content used to distinguish between file and directory",
 	});
 	function getRoot() {
 		return _root;
@@ -80,51 +97,65 @@ export default function fileSystem() {
 			});
 		return "/" + cwd.join("/");
 	}
-
-	function makeNode({ cwd, path, dir, user }) {
+	function getNode(absolutePath, user) {
 		try {
-			const _r = getRoot()["/"];
-			const absolutePath = createAbsolutePath(cwd, path, user)
-				.split("/")
-				.filter((i) => i !== "");
-			let parentNode = _r;
-			for (let i = 0; i < absolutePath.length; i++) {
-				let node = absolutePath[i];
-				if (Object.keys(parentNode.children).includes(node)) {
-					parentNode = parentNode.children[`${node}`];
-				} else {
-					if (i === absolutePath.length - 1) {
-						if (!dir) {
-							parentNode.children[`${node}`] = {
-								properties: {
-									owner: user,
-									permissions: "-rw-r--",
-								},
-								content: "",
-							};
-						} else {
-							parentNode.children[`${node}`] = {
-								properties: {
-									owner: user,
-									permissions: "drwxr--",
-								},
-								children: {
-									parent: "/" + absolutePath.join("/") + "/",
-								},
-							};
-						}
-						return parentNode.children[`${node}`];
-					} else {
-						throw Error(
-							`Invalid path. ${node} Directory doesn't exist`
-						);
-					}
-				}
+			let parentDir = getRoot()["/"];
+			for (let i of absolutePath) {
+				// TODO: Check permission before giving access to childrens
+				parentDir = parentDir.children[i];
 			}
+			return parentDir;
 		} catch (e) {
 			console.log(e);
-			return undefined;
+			return null;
 		}
+	}
+	function makeNode({ cwd, path, file, user, permission, pseudoRoot }) {
+		//
+		// pseudoRoot is temporary fix and subject to change soon
+		//
+		const absolutePath = createAbsolutePath(cwd, path, user)
+			.split("/")
+			.filter((i) => i !== "");
+		const parentNodeName = "/" + absolutePath.join("/");
+		const parentNode = getNode(absolutePath.slice(0, -1), user);
+		if (parentNode) {
+			const parentPermission = parentNode.properties.permissions;
+			if (parentPermission[0] === "d") {
+				if (user === parentNode.properties.owner) {
+					if (parentPermission[2] === "w") {
+						// Write access granted
+						parentNode.children[absolutePath.at(-1)] =
+							file === null
+								? directoryTemplate(
+										user,
+										parentNodeName,
+										permission
+								  )
+								: fileTemplate(user, permission, file);
+					} else {
+						throw Error("Write permission denied");
+					}
+				} else if (parentPermission[5] === "w" || user === "root" || pseudoRoot) {
+					// Write access Granted
+					parentNode.children[absolutePath.at(-1)] =
+						file === null
+							? directoryTemplate(
+									user,
+									parentNodeName,
+									permission
+							  )
+							: fileTemplate(user, permission, file);
+				} else throw Error("Permission denied");
+			} else {
+				throw Error(
+					"mkdir: cannot create directory " +
+						path +
+						": not a directory"
+				);
+			}
+		}
+		return 0;
 	}
 	function getBinaryString(number) {
 		if (number > 7) throw Error("Permission bit can't exceed 7");
@@ -148,6 +179,7 @@ export default function fileSystem() {
 	function transformNumericalPermission(number) {
 		try {
 			// Remove slice to enable group permissions
+			// After you've implemented required checkers
 			return getBinaryString(String(number).slice(0, 2));
 		} catch (e) {
 			throw Error("Invalid permission type.");
