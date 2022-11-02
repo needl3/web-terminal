@@ -42,57 +42,68 @@ function listDFS(parentDir, detailed) {
 }
 function ls(argv, state) {
 	const helpMessage = `Directory lister:
-                        Usage:  ls <path> [<flags>]`;
+                        Usage:  ls <path/to/directory> [<flags>]`;
 	const returnState = { newState: {}, code: 0, message: "" };
 
-	try {
-		if (!argv.length) argv.push(".");
-		if (argv[0] === "--help" || argv[0] === "-h") {
-			returnState.message = helpMessage;
-		} else {
-			let files = [];
-			const path = argv[0].includes("-") ? "." : argv[0];
+	if (!argv.length) argv.push(".");
+	if (argv[0] === "--help" || argv[0] === "-h") {
+		returnState.message = helpMessage;
+		returnState.code = 1;
+		return returnState;
+	} else {
+		let files = [];
+		const path = argv[0].includes("-") ? "." : argv[0];
+		try {
 			let parentDir = state.fs.getNode(
 				state.fs
 					.createAbsolutePath(state.cwd, path, state.user)
 					.split("/")
-					.filter((i) => i !== "")
+					.filter((i) => i !== ""),
+				state.user
 			);
-			try {
-				// First fetch last node to begin ls from
-				if (argv.includes("-R")) {
-					files = listDFS(parentDir, argv.includes("-l"));
-					files = files.map((file) =>
-						file.replace(parentDir.children.parent, ".")
-					);
-				} else {
-					for (child of Object.keys(parentDir.children).filter(
-						(i) => i != "parent"
-					)) {
-						if (argv.includes("-l")) {
-							files.push(
-								"\n" +
-									parentDir.children[child].properties
-										.permissions +
-									"\t" +
-									child
-							);
-						} else {
-							files.push(child);
-						}
+			if (
+				!(
+					parentDir.properties.owner === state.user &&
+					parentDir.properties.permissions[1] === "r"
+				) &&
+				!(
+					parentDir.properties.permissions[4] === "r" &&
+					parentDir.properties.owner !== state.user
+				)
+			) {
+				console.log(parentDir);
+				throw Error("Permission denied", { cause: "intentional" });
+			}
+			// First fetch last node to begin ls from
+			if (argv.includes("-R")) {
+				files = listDFS(parentDir, argv.includes("-l"));
+				files = files.map((file) =>
+					file.replace(parentDir.children.parent, ".")
+				);
+			} else {
+				for (child of Object.keys(parentDir.children).filter(
+					(i) => i != "parent"
+				)) {
+					if (argv.includes("-l")) {
+						files.push(
+							"\n" +
+								parentDir.children[child].properties
+									.permissions +
+								"\t" +
+								child
+						);
+					} else {
+						files.push(child);
 					}
 				}
-			} catch (e) {
-				console.log(e);
-				returnState.message = "Invalid path. Doesn't exist";
-				return returnState;
 			}
 			returnState.message = files.join(" ");
+		} catch (e) {
+			console.log(e);
+			if (e.cause === "intentional") returnState.message = e.message;
+			else returnState.message = "Invalid use\n" + helpMessage;
+			returnState.code = 1;
 		}
-	} catch (e) {
-		console.log(e);
-		returnState.message = `Invalid use!
-                    ${helpMessage}`;
 	}
 	return returnState;
 }

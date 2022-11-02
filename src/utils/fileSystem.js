@@ -66,8 +66,8 @@ export default function fileSystem() {
 		cwd: "/",
 		path: "home/Oxsiyo",
 		file: null,
-		pseudoRoot: true
-	})
+		pseudoRoot: true,
+	});
 
 	// Test file
 	makeNode({
@@ -75,6 +75,26 @@ export default function fileSystem() {
 		cwd: "/",
 		path: "home/Oxsiyo/byRoot.txt",
 		file: "This is content used to distinguish between file and directory",
+	});
+	makeNode({
+		user: "Oxsiyo",
+		cwd: "/",
+		path: "home/Oxsiyo/dir",
+		file: null,
+		permission: "d-wxr-x",
+	});
+	makeNode({
+		user: "Oxsiyo",
+		cwd: "/",
+		path: "home/Oxsiyo/dir/newdir",
+		file: null,
+		permission: "drwxr-x",
+	});
+	makeNode({
+		user: "Oxsiyo",
+		cwd: "/",
+		path: "home/Oxsiyo/dir/newdir/temp.txt",
+		file: "This is content used to permission test",
 	});
 	function getRoot() {
 		return _root;
@@ -97,19 +117,33 @@ export default function fileSystem() {
 			});
 		return "/" + cwd.join("/");
 	}
-	function getNode(absolutePath, user) {
-		try {
-			let parentDir = getRoot()["/"];
-			for (let i of absolutePath) {
-				// TODO: Check permission before giving access to childrens
+	function getNode(absolutePathList, user) {
+		let parentDir = getRoot()["/"];
+		for (let i of absolutePathList) {
+			// TODO: Check permission before giving access to childrens
+			if (
+				// owner + +x or others + +x
+				(parentDir.properties.owner === user &&
+					parentDir.properties.permissions[3] === "x") ||
+				(parentDir.properties.permissions[6] === "x" &&
+					parentDir.properties.owner !== user)
+			)
 				parentDir = parentDir.children[i];
-			}
-			return parentDir;
-		} catch (e) {
-			console.log(e);
-			return null;
+			else throw Error("Permission denied", {cause: 'intentional'});
+		}
+		if (!parentDir) throw Error("Error: No file/directory with that name", {cause: 'intentional'});
+		return parentDir;
+	}
+	function editNode({ cwd, path, file, user, permission }) {
+		const absolutePathList = createAbsolutePath(cwd, path, user)
+			.split("/")
+			.filter((i) => i !== "");
+		const parentNodeName = "/" + absolutePathList.join("/");
+		const parentNode = getNode(absolutePathList.slice(0, -1), user);
+		if (parentNode) {
 		}
 	}
+
 	function makeNode({ cwd, path, file, user, permission, pseudoRoot }) {
 		//
 		// pseudoRoot is temporary fix and subject to change soon
@@ -134,9 +168,13 @@ export default function fileSystem() {
 								  )
 								: fileTemplate(user, permission, file);
 					} else {
-						throw Error("Write permission denied");
+						throw Error("Write permission denied", {cause: 'intentional'});
 					}
-				} else if (parentPermission[5] === "w" || user === "root" || pseudoRoot) {
+				} else if (
+					parentPermission[5] === "w" ||
+					user === "root" ||
+					pseudoRoot
+				) {
 					// Write access Granted
 					parentNode.children[absolutePath.at(-1)] =
 						file === null
@@ -146,19 +184,20 @@ export default function fileSystem() {
 									permission
 							  )
 							: fileTemplate(user, permission, file);
-				} else throw Error("Permission denied");
+				} else throw Error("Permission denied", {cause: 'intentional'});
 			} else {
 				throw Error(
 					"mkdir: cannot create directory " +
 						path +
-						": not a directory"
+						": not a directory",
+					{cause: 'intentional'}
 				);
 			}
 		}
 		return 0;
 	}
 	function getBinaryString(number) {
-		if (number > 7) throw Error("Permission bit can't exceed 7");
+		if (number > 7) throw Error("Permission bit can't exceed 7", {cause: 'intentional'});
 		const maxDigits = 3;
 		const binString = [];
 		number.split("").forEach((n) => {
@@ -182,7 +221,7 @@ export default function fileSystem() {
 			// After you've implemented required checkers
 			return getBinaryString(String(number).slice(0, 2));
 		} catch (e) {
-			throw Error("Invalid permission type.");
+			throw Error("Invalid permission type.", {cause: 'intentional'});
 		}
 	}
 	function permissionParser(permission) {
@@ -196,5 +235,6 @@ export default function fileSystem() {
 		getRoot,
 		createAbsolutePath,
 		makeNode,
+		getNode,
 	};
 }
