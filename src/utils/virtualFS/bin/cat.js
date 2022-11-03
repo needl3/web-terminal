@@ -19,7 +19,20 @@ function cat(argv, state) {
 				throw Error("Error: Can't cat a directory", {
 					cause: "intentional",
 				});
-			else returnState.message = file.content;
+			else {
+				if (
+					(file.properties.permissions[1] === "r" &&
+						file.properties.owner === state.user) ||
+					(file.properties.permissions[4] === "r" &&
+						file.properties.owner !== user)
+				)
+					returnState.message = file.content;
+				else
+					throw Error(
+						"Cannot cat " + argv[0] + ". Permission denied",
+						{ cause: "intentional" }
+					);
+			}
 		} catch (e) {
 			console.log(e);
 			if (e.cause === "intentional") returnState.message = e.message;

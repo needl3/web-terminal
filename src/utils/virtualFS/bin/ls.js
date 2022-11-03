@@ -18,13 +18,20 @@ function listDFS(parentDir, detailed) {
 					"\n" +
 						parentDir.children[child].properties.permissions +
 						"\t" +
+						parentDir.children[child].properties.owner +
+						"\t" +
 						child
 				);
 			else files.push(child);
 		} else {
 			if (detailed) {
 				files.push(
-					"\n" + parentDir.properties.permissions + "\t" + child
+					"\n" +
+						parentDir.properties.permissions +
+						"\t" +
+						parentDir.properties.owner +
+						"\t" +
+						child
 				);
 				dfsList.push(parentDir.children[child]);
 			} else {
@@ -52,11 +59,11 @@ function ls(argv, state) {
 		return returnState;
 	} else {
 		let files = [];
-		const path = argv[0].includes("-") ? "." : argv[0];
+		const path = argv.filter((i) => !i.includes("-"))[0];
 		try {
 			let parentDir = state.fs.getNode(
 				state.fs
-					.createAbsolutePath(state.cwd, path, state.user)
+					.createAbsolutePath(state.cwd, path || ".", state.user)
 					.split("/")
 					.filter((i) => i !== ""),
 				state.user
@@ -71,7 +78,6 @@ function ls(argv, state) {
 					parentDir.properties.owner !== state.user
 				)
 			) {
-				console.log(parentDir);
 				throw Error("Permission denied", { cause: "intentional" });
 			}
 			// First fetch last node to begin ls from
@@ -89,6 +95,8 @@ function ls(argv, state) {
 							"\n" +
 								parentDir.children[child].properties
 									.permissions +
+								"\t" +
+								parentDir.children[child].properties.owner +
 								"\t" +
 								child
 						);
