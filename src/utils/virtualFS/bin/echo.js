@@ -1,41 +1,37 @@
-function getNode(root, path) {
-	let i = 0;
-	for (i = 0; i < path.length; i++) {
-		if (root.children[path[i]] && root.children[path[i]].children)
-			root = root.children[path[i]];
-		else break;
-	}
-	if (i === path.length - 1) {
-		if (root.children[path[i]]) return root.children[path[i]];
-		else return root;
-	} else return -1;
-}
+const helpMessage = `
+		Echo: Write characters to stdin
+		Usage: echo <string>
+		`
 function echo(args, state) {
 	const finalState = { newState: {}, code: 0, message: "" };
 	const content = args[0];
 	const redirect = args[1];
 	const fileName = args[2];
 
-	if (redirect === ">" || redirect === ">>") {
-		const absolutePath = state.fs
-			.createAbsolutePath(state.cwd, fileName, state.user)
-			.split("/")
-			.filter((i) => i !== "");
-		const parentNode = getNode(state.fs.getRoot()["/"], absolutePath);
-		if (parentNode !== -1) {
-			if (parentNode.children === undefined)
-				parentNode.content = (redirect === ">>") ? parentNode.content + "\n" + content : content;
+	try {
+		if (redirect === ">" || redirect === ">>") {
+			const absolutePath = state.fs
+				.createAbsolutePath(state.cwd, fileName, state.user)
+				.split("/")
+				.filter((i) => i !== "");
+			const parentNode = state.fs.getNode(
+				absolutePath.slice(0,-1),
+				state.user
+			);
+			let targetChild = parentNode.children[absolutePath.at(-1)]
+			if(targetChild)
+				parentNode.children[absolutePath.at(-1)]= {...targetChild,
+					content: (redirect === ">") ? content : targetChild.content+"\n"+content,
+				}
 			else
-				parentNode.children[absolutePath.at(-1)] = {
-					content: content,
-					properties: { owner: state.user, permissions: "-rw-r--" },
-				};
-		} else{
-			finalState.message = "No such file/directory"
-			finalState.code = 1
-		}
-	}else{
-		finalState.message = content
+				state.fs.makeNode({cwd: state.cwd, path: fileName, file: content, user: state.user })
+		}else 
+			finalState.message = content;
+	} catch (e) {
+		console.log(e)
+		if (e.cause === "intentional") finalState.message = e.message;
+		else finalState.message = "Invalid use\n" + helpMessage;
+		finalState.code = 1;
 	}
 	return finalState;
 }

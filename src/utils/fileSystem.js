@@ -74,6 +74,7 @@ export default function fileSystem() {
 		user: "root",
 		cwd: "/",
 		path: "home/Oxsiyo/byRoot.txt",
+		permission: "-rw-wx",
 		file: "This is content used to distinguish between file and directory",
 	});
 	makeNode({
