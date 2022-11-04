@@ -121,7 +121,6 @@ export default function fileSystem() {
 	function getNode(absolutePathList, user) {
 		let parentDir = getRoot()["/"];
 		for (let i of absolutePathList) {
-			// TODO: Check permission before giving access to childrens
 			if (
 				// owner + +x or others + +x
 				(parentDir.properties.owner === user &&
@@ -213,15 +212,18 @@ export default function fileSystem() {
 				cause: "intentional",
 			});
 		if (
+			// First check if directory is writable
+			// Then check if the node to be deleted is writable
 			!(
-				parentNode.properties.permissions[2] === "w" &&
-				parentNode.properties.owner === user
-			) &&
-			!(
-				parentNode.properties.permissions[5] === "w" &&
-				parentNode.properties.owner !== user
-			) &&
-			!(targetChild.properties.permissions[2] === "w") // This is not actual and subject to change
+				(((parentNode.properties.permissions[2] === "w" &&
+					parentNode.properties.owner === user) ||
+					(parentNode.properties.permissions[5] === "w" &&
+						parentNode.properties.owner !== user)) &&
+					targetChild.properties.permissions[2] === "w" &&
+					targetChild.properties.owner === user) ||
+				(targetChild.properties.permissions[5] === "w" &&
+					targetChild.properties.owner !== user)
+			)
 		)
 			throw Error("Cannot remove file. Permission denied", {
 				cause: "intentional",
@@ -331,7 +333,6 @@ export default function fileSystem() {
 		}
 	}
 	return {
-		getRoot,
 		createAbsolutePath,
 		makeNode,
 		getNode,
