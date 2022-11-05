@@ -164,7 +164,6 @@ export default function fileSystem() {
 	function editNode({ cwd, path, user, nodeContent, nodeProperties }) {
 		/*
 		 API info
-		 nodeName = String, 							// New name for the file/directory
 		 nodeContent = {
 		 	add: bool,
 			content: String
@@ -172,10 +171,13 @@ export default function fileSystem() {
 		nodeProperties: {
 			owner: String,
 			permissions: String 						// permission bits
+			}
 
 			Node: Donot initialize all these three fields at once
 			If all are initialized only the first will take effect
+			Including sub properties of nodeProperties
 		 */
+		console.log(cwd, path, user)
 		const absolutePathList = createAbsolutePath(cwd, path, user)
 			.split("/")
 			.filter((i) => i !== "");
@@ -197,7 +199,7 @@ export default function fileSystem() {
 					);
 				parentNode.children[
 					absolutePathList.at(-1)
-				].properties.permissions = getBinaryString(
+				].properties.permissions = targetChild.properties.permissions[0] + transformNumericalPermission(
 					nodeProperties.permissions
 				);
 			}
@@ -207,12 +209,13 @@ export default function fileSystem() {
 			if (
 				(user === targetChild.properties.owner &&
 					permission[2] === "w") ||
-				(user !== targetChild.properties.owner && permission[5] === "w")
+				(user !== targetChild.properties.owner && permission[5] === "w") ||
+				user === "root"
 			) {
 				parentNode.children[absolutePathList.at(-1)].content =
-					nodeContent.add === true
+					(nodeContent.add === true
 						? targetChild.content + "\n"
-						: "" + nodeContent.content;
+						: "") + nodeContent.content;
 			} else
 				throw Error("Cannot write to the file. Permission denied", {
 					cause: "intentional",
@@ -318,13 +321,13 @@ export default function fileSystem() {
 		return 0;
 	}
 	function getBinaryString(number) {
-		if (number > 7)
-			throw Error("Permission bit can't exceed 7", {
-				cause: "intentional",
-			});
 		const maxDigits = 3;
 		const binString = [];
 		number.split("").forEach((n) => {
+			if (n > 7)
+			throw Error("Permission bit's value can't exceed 7", {
+				cause: "intentional",
+			});
 			const binStringTemp = [];
 			while (n) {
 				binStringTemp.unshift(n % 2);
@@ -337,22 +340,34 @@ export default function fileSystem() {
 				]
 			);
 		});
-		return binString.join("");
+		return binString;
 	}
 	function transformNumericalPermission(number) {
 		try {
 			// Remove slice to enable group permissions
 			// After you've implemented required checkers
-			return getBinaryString(String(number).slice(0, 2));
+
+			// Checking if input permission type is number
+			if(typeof parseInt(number) !== 'number') throw Error();
+			const binString = getBinaryString(String(number).slice(0, 2));
+			const permString = []
+			for(let i=0;i<binString.length;i++){
+				switch(i%3){
+					case 0:
+						permString.push(binString[i] ? "r" : "-")
+						break;
+					case 1:
+						permString.push(binString[i] ? "w" : "-")
+						break;
+					case 2:
+						permString.push(binString[i] ? "x" : "-")
+						break;
+				}
+			}
+			return permString.join("")
 		} catch (e) {
+			if(e.cause === "intentional") throw e;
 			throw Error("Invalid permission type.", { cause: "intentional" });
-		}
-	}
-	function permissionParser(permission) {
-		try {
-			transformNumericalPermission(permission);
-		} catch (e) {
-			console.log(e);
 		}
 	}
 	return {
@@ -360,5 +375,6 @@ export default function fileSystem() {
 		makeNode,
 		getNode,
 		removeNode,
+		editNode
 	};
 }

@@ -8,6 +8,11 @@ function echo(args, state) {
 	const redirect = args[1];
 	const fileName = args[2];
 
+	// Redirection although is not an argument in UNIX systems
+	// It is considered as one here
+	// because command chaining is far from implementation
+	// And I want this to contain all basic utilities
+
 	try {
 		if (redirect === ">" || redirect === ">>") {
 			const absolutePath = state.fs
@@ -20,13 +25,7 @@ function echo(args, state) {
 			);
 			let targetChild = parentNode.children[absolutePath.at(-1)];
 			if (targetChild)
-				parentNode.children[absolutePath.at(-1)] = {
-					...targetChild,
-					content:
-						redirect === ">"
-							? content
-							: targetChild.content + "\n" + content,
-				};
+				state.fs.editNode({cwd: state.cwd, path: fileName, user: state.user,  nodeContent: {add: redirect === ">>", content: content}})
 			else
 				state.fs.makeNode({
 					cwd: state.cwd,
