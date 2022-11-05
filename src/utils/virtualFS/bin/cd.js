@@ -24,7 +24,8 @@ function cd(argv, state) {
 				(node.properties.owner === state.user &&
 					node.properties.permissions[3] === "x") ||
 				(node.properties.permissions[6] === "x" &&
-					node.properties.owner !== state.user)
+					node.properties.owner !== state.user) ||
+				state.user === "root"
 			)
 				finalState.newState.cwd = node.children.parent.replace(
 					"/home/" + state.user,

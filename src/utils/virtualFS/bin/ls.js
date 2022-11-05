@@ -80,7 +80,8 @@ function ls(argv, state) {
 				!(
 					parentDir.properties.permissions[4] === "r" &&
 					parentDir.properties.owner !== state.user
-				)
+				) &&
+				state.user !== "root"
 			) {
 				throw Error("Permission denied", { cause: "intentional" });
 			}

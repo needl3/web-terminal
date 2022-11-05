@@ -183,6 +183,7 @@ export default function fileSystem() {
 			.filter((i) => i !== "");
 		const parentNode = getNode(absolutePathList.slice(0, -1), user);
 		const targetChild = parentNode.children[absolutePathList.at(-1)];
+		if(!targetChild) throw Error("No such file/directory", {cause: "intentional"})
 		if (nodeProperties) {
 			if (nodeProperties.owner) {
 				if (user !== "root")
@@ -190,9 +191,9 @@ export default function fileSystem() {
 						cause: "intentional",
 					});
 				parentNode.children[absolutePathList.at(-1)].properties.owner =
-					nodeContent.owner;
+					nodeProperties.owner;
 			} else if (nodeProperties.permissions) {
-				if (user !== targetChild.properties.owner)
+				if (user !== targetChild.properties.owner && user !== "root")
 					throw Error(
 						"Changing permissions. Operation not permitted",
 						{ cause: "intentional" }
