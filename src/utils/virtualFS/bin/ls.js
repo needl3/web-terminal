@@ -1,7 +1,11 @@
-function listDFS(parentDir, detailed) {
-	const children = Object.keys(parentDir.children).filter(
-		(i) => i !== "parent"
-	);
+function listDFS(parentDir, detailed, showHidden) {
+	const children = Object.keys(parentDir.children).filter((i) => {
+		if (i != "parent") {
+			if (i[0] === ".") return showHidden;
+			return true;
+		}
+		return false;
+	});
 	const parentName = parentDir.children.parent;
 
 	// This initial file resebles relative directory to which files after it are added
@@ -82,14 +86,22 @@ function ls(argv, state) {
 			}
 			// First fetch last node to begin ls from
 			if (argv.includes("-R")) {
-				files = listDFS(parentDir, argv.includes("-l"));
+				files = listDFS(
+					parentDir,
+					argv.includes("-l"),
+					argv.includes("-a")
+				);
 				files = files.map((file) =>
 					file.replace(parentDir.children.parent, ".")
 				);
 			} else {
-				for (child of Object.keys(parentDir.children).filter(
-					(i) => i != "parent"
-				)) {
+				for (child of Object.keys(parentDir.children).filter((i) => {
+					if (i != "parent") {
+						if (i[0] === ".") return argv.includes("-a");
+						return true;
+					}
+					return false;
+				})) {
 					if (argv.includes("-l")) {
 						files.push(
 							"\n" +
