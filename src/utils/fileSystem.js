@@ -6,7 +6,19 @@ Regarding Permissions:
 
 // Register you system binaries here to list in ls
 // Blame fs for browser for this inconvenience
-const sysBinaries = ["ls", "clear", "whoami", "mkdir", "echo", "cat", "cd", "rm", "rmdir"];
+const sysBinaries = [
+	"ls",
+	"clear",
+	"whoami",
+	"mkdir",
+	"echo",
+	"cat",
+	"cd",
+	"rm",
+	"rmdir",
+	"chmod",
+	"chown",
+];
 
 // Templates for empty nodes
 const directoryTemplate = (user, parentNodeName, permission) => {
@@ -96,6 +108,7 @@ export default function fileSystem() {
 		user: "Oxsiyo",
 		cwd: "/",
 		path: "home/Oxsiyo/dir/newdir/temp.txt",
+		permission: "-rwxr-x",
 		file: "This is content used to permission test",
 	});
 	function createAbsolutePath(cwd, path, user) {
@@ -147,7 +160,7 @@ export default function fileSystem() {
 				// because external binaries could alter the nodes
 				// Create a node setter for this and refactor all caller,callee logic
 				return parentDir;
-			else throw Error("Permission denied", { cause: "intentional" });
+			else throw Error("Permission denied.", { cause: "intentional" });
 		} else if (parentDir.properties.permissions[0] === "-") {
 			if (
 				(parentDir.properties.permissions[1] === "r" &&
@@ -158,7 +171,7 @@ export default function fileSystem() {
 			)
 				// Return whole node because there are not children
 				return parentDir;
-			else throw Error("Permission denied", { cause: "intentional" });
+			else throw Error("Permission denied.", { cause: "intentional" });
 		}
 	}
 	function editNode({ cwd, path, user, nodeContent, nodeProperties }) {
@@ -177,13 +190,14 @@ export default function fileSystem() {
 			If all are initialized only the first will take effect
 			Including sub properties of nodeProperties
 		 */
-		console.log(cwd, path, user)
+		console.log(cwd, path, user);
 		const absolutePathList = createAbsolutePath(cwd, path, user)
 			.split("/")
 			.filter((i) => i !== "");
 		const parentNode = getNode(absolutePathList.slice(0, -1), user);
 		const targetChild = parentNode.children[absolutePathList.at(-1)];
-		if(!targetChild) throw Error("No such file/directory", {cause: "intentional"})
+		if (!targetChild)
+			throw Error("No such file/directory", { cause: "intentional" });
 		if (nodeProperties) {
 			if (nodeProperties.owner) {
 				if (user !== "root")
@@ -200,9 +214,9 @@ export default function fileSystem() {
 					);
 				parentNode.children[
 					absolutePathList.at(-1)
-				].properties.permissions = targetChild.properties.permissions[0] + transformNumericalPermission(
-					nodeProperties.permissions
-				);
+				].properties.permissions =
+					targetChild.properties.permissions[0] +
+					transformNumericalPermission(nodeProperties.permissions);
 			}
 		} else if (nodeContent) {
 			// Verify permission
@@ -210,7 +224,8 @@ export default function fileSystem() {
 			if (
 				(user === targetChild.properties.owner &&
 					permission[2] === "w") ||
-				(user !== targetChild.properties.owner && permission[5] === "w") ||
+				(user !== targetChild.properties.owner &&
+					permission[5] === "w") ||
 				user === "root"
 			) {
 				parentNode.children[absolutePathList.at(-1)].content =
@@ -233,7 +248,7 @@ export default function fileSystem() {
 		const absolutePathList = createAbsolutePath(cwd, path, user)
 			.split("/")
 			.filter((i) => i !== "");
-		const parentNode = getNode(absolutePathList.slice(0, -1));
+		const parentNode = getNode(absolutePathList.slice(0, -1), user);
 		const targetChild = parentNode.children[absolutePathList.at(-1)];
 		if (!targetChild)
 			throw Error("No file/directory with that name", {
@@ -326,9 +341,9 @@ export default function fileSystem() {
 		const binString = [];
 		number.split("").forEach((n) => {
 			if (n > 7)
-			throw Error("Permission bit's value can't exceed 7", {
-				cause: "intentional",
-			});
+				throw Error("Permission bit's value can't exceed 7", {
+					cause: "intentional",
+				});
 			const binStringTemp = [];
 			while (n) {
 				binStringTemp.unshift(n % 2);
@@ -349,25 +364,25 @@ export default function fileSystem() {
 			// After you've implemented required checkers
 
 			// Checking if input permission type is number
-			if(typeof parseInt(number) !== 'number') throw Error();
+			if (typeof parseInt(number) !== "number") throw Error();
 			const binString = getBinaryString(String(number).slice(0, 2));
-			const permString = []
-			for(let i=0;i<binString.length;i++){
-				switch(i%3){
+			const permString = [];
+			for (let i = 0; i < binString.length; i++) {
+				switch (i % 3) {
 					case 0:
-						permString.push(binString[i] ? "r" : "-")
+						permString.push(binString[i] ? "r" : "-");
 						break;
 					case 1:
-						permString.push(binString[i] ? "w" : "-")
+						permString.push(binString[i] ? "w" : "-");
 						break;
 					case 2:
-						permString.push(binString[i] ? "x" : "-")
+						permString.push(binString[i] ? "x" : "-");
 						break;
 				}
 			}
-			return permString.join("")
+			return permString.join("");
 		} catch (e) {
-			if(e.cause === "intentional") throw e;
+			if (e.cause === "intentional") throw e;
 			throw Error("Invalid permission type.", { cause: "intentional" });
 		}
 	}
@@ -376,6 +391,6 @@ export default function fileSystem() {
 		makeNode,
 		getNode,
 		removeNode,
-		editNode
+		editNode,
 	};
 }
