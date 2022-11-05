@@ -6,7 +6,7 @@ Regarding Permissions:
 
 // Register you system binaries here to list in ls
 // Blame fs for browser for this inconvenience
-const sysBinaries = ["ls", "clear", "whoami", "mkdir", "echo", "cat", "cd"];
+const sysBinaries = ["ls", "clear", "whoami", "mkdir", "echo", "cat", "cd", "rm", "rmdir"];
 
 // Templates for empty nodes
 const directoryTemplate = (user, parentNodeName, permission) => {
@@ -65,6 +65,7 @@ export default function fileSystem() {
 		user: "Oxsiyo",
 		cwd: "/",
 		path: "home/Oxsiyo",
+		permission: "drwx---",
 		file: null,
 		pseudoRoot: true,
 	});
@@ -97,9 +98,6 @@ export default function fileSystem() {
 		path: "home/Oxsiyo/dir/newdir/temp.txt",
 		file: "This is content used to permission test",
 	});
-	function getRoot() {
-		return _root;
-	}
 	function createAbsolutePath(cwd, path, user) {
 		// Resolve cwd
 		cwd = cwd
@@ -119,14 +117,15 @@ export default function fileSystem() {
 		return "/" + cwd.join("/");
 	}
 	function getNode(absolutePathList, user) {
-		let parentDir = getRoot()["/"];
+		let parentDir = _root["/"];
 		for (let i of absolutePathList) {
 			if (
 				// owner + +x or others + +x
 				(parentDir.properties.owner === user &&
 					parentDir.properties.permissions[3] === "x") ||
 				(parentDir.properties.permissions[6] === "x" &&
-					parentDir.properties.owner !== user)
+					parentDir.properties.owner !== user) ||
+				user === "root"
 			)
 				parentDir = parentDir.children[i];
 			else throw Error("Permission denied", { cause: "intentional" });
@@ -140,7 +139,8 @@ export default function fileSystem() {
 				(parentDir.properties.permissions[3] === "x" &&
 					parentDir.properties.owner === user) ||
 				(parentDir.properties.permissions[6] === "x" &&
-					parentDir.properties.owner !== user)
+					parentDir.properties.owner !== user) ||
+				user === "root"
 			)
 				// Logic still flawed, donot send whole children tree
 				// Just send one node worth of info
@@ -153,7 +153,8 @@ export default function fileSystem() {
 				(parentDir.properties.permissions[1] === "r" &&
 					parentDir.properties.owner === user) ||
 				(parentDir.properties.permissions[4] === "r" &&
-					parentDir.properties.owner !== user)
+					parentDir.properties.owner !== user) ||
+				user === "root"
 			)
 				// Return whole node because there are not children
 				return parentDir;

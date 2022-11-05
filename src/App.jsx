@@ -49,6 +49,7 @@ function App() {
 	try {
 		fileSys = new fileSystem();
 	} catch (e) {
+		console.log(e)
 		return (
 			<div className="terminal-container">
 				<ul>
