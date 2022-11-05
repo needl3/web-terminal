@@ -74,7 +74,7 @@ export default function fileSystem() {
 		user: "root",
 		cwd: "/",
 		path: "home/Oxsiyo/byRoot.txt",
-		permission: "-rw--wx",
+		permission: "-rw-r-x",
 		file: "This is content used to distinguish between file and directory",
 	});
 	makeNode({
@@ -82,14 +82,14 @@ export default function fileSystem() {
 		cwd: "/",
 		path: "home/Oxsiyo/dir",
 		file: null,
-		permission: "drwxr-x",
+		permission: "d-wxr-x",
 	});
 	makeNode({
 		user: "Oxsiyo",
 		cwd: "/",
 		path: "home/Oxsiyo/dir/newdir",
 		file: null,
-		permission: "drwxr-x",
+		permission: "d-wx---",
 	});
 	makeNode({
 		user: "Oxsiyo",
@@ -135,7 +135,30 @@ export default function fileSystem() {
 			throw Error("Error: No file/directory with that name", {
 				cause: "intentional",
 			});
-		return parentDir;
+		if (parentDir.properties.permissions[0] === "d") {
+			if (
+				(parentDir.properties.permissions[3] === "x" &&
+					parentDir.properties.owner === user) ||
+				(parentDir.properties.permissions[6] === "x" &&
+					parentDir.properties.owner !== user)
+			)
+				// Logic still flawed, donot send whole children tree
+				// Just send one node worth of info
+				// because external binaries could alter the nodes
+				// Create a node setter for this and refactor all caller,callee logic
+				return parentDir;
+			else throw Error("Permission denied", { cause: "intentional" });
+		} else if (parentDir.properties.permissions[0] === "-") {
+			if (
+				(parentDir.properties.permissions[1] === "r" &&
+					parentDir.properties.owner === user) ||
+				(parentDir.properties.permissions[4] === "r" &&
+					parentDir.properties.owner !== user)
+			)
+				// Return whole node because there are not children
+				return parentDir;
+			else throw Error("Permission denied", { cause: "intentional" });
+		}
 	}
 	function editNode({ cwd, path, user, nodeContent, nodeProperties }) {
 		/*
@@ -238,7 +261,6 @@ export default function fileSystem() {
 			});
 		delete parentNode.children[absolutePathList.at(-1)];
 	}
-
 	function makeNode({ cwd, path, file, user, permission, pseudoRoot }) {
 		//
 		// pseudoRoot is temporary fix and subject to change soon

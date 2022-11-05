@@ -16,21 +16,24 @@ function rm(argv, state) {
 				targetNodeName,
 				state.user
 			);
-			const targetChild = state.fs.getNode(
-				absolutePath.split("/").filter((i) => i != ""),
+			const absolutePathList = absolutePath
+				.split("/")
+				.filter((i) => i != "");
+			const parentDir = state.fs.getNode(
+				absolutePathList.slice(0, -1),
 				state.user
 			);
+			const targetChild = parentDir.children[absolutePathList.at(-1)];
 			if (targetChild.properties.permissions[0] === "d")
 				throw Error(
 					"Cannot remove a directory. Use -r flag for recursive directory removal.",
 					{ cause: "intentional" }
 				);
-			else
-				state.fs.removeNode({
-					cwd: state.cwd,
-					path: absolutePath,
-					user: state.user,
-				});
+			state.fs.removeNode({
+				cwd: state.cwd,
+				path: absolutePath,
+				user: state.user,
+			});
 		}
 	} catch (e) {
 		console.log(e);
