@@ -160,7 +160,25 @@ export default function fileSystem() {
 				// because external binaries could alter the nodes
 				// Create a node setter for this and refactor all caller,callee logic
 				return parentDir;
-			else throw Error("Permission denied.", { cause: "intentional" });
+			else if (
+				(parentDir.properties.permissions[1] === "r" &&
+					parentDir.properties.owner === user) ||
+				(parentDir.properties.permissions[4] === "r" &&
+					parentDir.properties.owner !== user)
+			) {
+				const tempDir = {
+					properties: parentDir.properties,
+					children: {},
+				};
+				Object.keys(parentDir.children)
+					.filter((i) => i !== "parent")
+					.forEach((child) => {
+						tempDir.children[child] = {
+							properties: parentDir.children[child].properties,
+						};
+					});
+				return tempDir;
+			} else throw Error("Permission denied.", { cause: "intentional" });
 		} else if (parentDir.properties.permissions[0] === "-") {
 			if (
 				(parentDir.properties.permissions[1] === "r" &&
@@ -190,7 +208,6 @@ export default function fileSystem() {
 			If all are initialized only the first will take effect
 			Including sub properties of nodeProperties
 		 */
-		console.log(cwd, path, user);
 		const absolutePathList = createAbsolutePath(cwd, path, user)
 			.split("/")
 			.filter((i) => i !== "");

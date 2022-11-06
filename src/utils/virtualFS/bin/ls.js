@@ -91,9 +91,8 @@ function ls(argv, state) {
 					parentDir.properties.owner !== state.user
 				) &&
 				state.user !== "root"
-			) {
+			)
 				throw Error("Permission denied", { cause: "intentional" });
-			}
 			// First fetch last node to begin ls from
 			if (argv.includes("-R")) {
 				files = listDFS(
