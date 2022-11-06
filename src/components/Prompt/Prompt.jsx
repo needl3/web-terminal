@@ -17,7 +17,7 @@ export default function Prompt({ handleUpdate, historyItem, currentState }) {
                 ┌─[
                 <span>
                     {
-                        new Date(new Date().setMilliseconds(historyItem ? historyItem.timeStamp : currentState.timeStamp))
+                        new Date(new Date().setTime(historyItem ? historyItem.timeStamp : currentState.timeStamp))
                             .toTimeString()
                             .split(" ")[0]
                     }
