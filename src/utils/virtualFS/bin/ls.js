@@ -1,4 +1,20 @@
-function listDFS(parentDir, detailed, showHidden) {
+function listDFS(parentDir, detailed, showHidden, user) {
+	// This initial file resebles relative directory to which files after it are added
+	const files = ["\n" + parentDir.children.parent + "/:\n"];
+
+	if (
+		!(
+			parentDir.properties.permissions[1] === "r" &&
+			user === parentDir.properties.owner
+		) &&
+		!(
+			parentDir.properties.permissions[4] === "r" &&
+			user !== parentDir.properties.owner
+		)
+	) {
+		files.push("\n" + "Permission denied to read directory");
+		return files;
+	}
 	const children = Object.keys(parentDir.children).filter((i) => {
 		if (i != "parent") {
 			if (i[0] === ".") return showHidden;
@@ -6,10 +22,6 @@ function listDFS(parentDir, detailed, showHidden) {
 		}
 		return false;
 	});
-	const parentName = parentDir.children.parent;
-
-	// This initial file resebles relative directory to which files after it are added
-	const files = ["\n" + parentName + "/:\n"];
 
 	// To iterate further down listed directories
 	// After all entities are listed first
@@ -28,7 +40,7 @@ function listDFS(parentDir, detailed, showHidden) {
 				);
 			else files.push(child);
 		} else {
-			if (detailed) {
+			if (detailed)
 				files.push(
 					"\n" +
 						parentDir.properties.permissions +
@@ -37,17 +49,14 @@ function listDFS(parentDir, detailed, showHidden) {
 						"\t" +
 						child
 				);
-				dfsList.push(parentDir.children[child]);
-			} else {
-				files.push(child);
-				dfsList.push(parentDir.children[child]);
-			}
+			else files.push(child);
+			dfsList.push(parentDir.children[child]);
 		}
 	});
 	// For a line break after a level
 	files.push("\n-------------------------------------linebreak---------");
 	dfsList.forEach((item) => {
-		files.push(...listDFS(item, detailed));
+		files.push(...listDFS(item, detailed, user));
 	});
 	return files;
 }
@@ -90,7 +99,8 @@ function ls(argv, state) {
 				files = listDFS(
 					parentDir,
 					argv.includes("-l"),
-					argv.includes("-a")
+					argv.includes("-a"),
+					state.user
 				);
 				files = files.map((file) =>
 					file.replace(parentDir.children.parent, ".")
