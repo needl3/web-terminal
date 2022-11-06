@@ -1,6 +1,6 @@
 const helpMessage = `
 						Change file permissions
-						Usage: chmod <3 digit permission bits> <file_path>
+						Usage: chmod <2 digit permission bits> <file_path>
 					`;
 function chmod(argv, state) {
 	const finalState = { newState: {}, code: 0, message: "" };

@@ -368,11 +368,14 @@ export default function fileSystem() {
 			}
 			binString.push(
 				...[
-					...binStringTemp,
 					...new Array(maxDigits - binStringTemp.length).fill(0),
+					...binStringTemp,
 				]
 			);
 		});
+		binString.unshift(
+			...new Array(maxDigits * 3 - binString.length).fill(0)
+		);
 		return binString;
 	}
 	function transformNumericalPermission(number) {
@@ -382,7 +385,7 @@ export default function fileSystem() {
 
 			// Checking if input permission type is number
 			if (typeof parseInt(number) !== "number") throw Error();
-			const binString = getBinaryString(String(number).slice(0, 2));
+			const binString = getBinaryString(String(number).slice(0, 2)).slice(3);
 			const permString = [];
 			for (let i = 0; i < binString.length; i++) {
 				switch (i % 3) {
