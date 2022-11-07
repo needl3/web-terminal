@@ -1,4 +1,5 @@
 const uuid = require("uuid")
+
 export default function FormattedResponse({ message }) {
     return (
         <>

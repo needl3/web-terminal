@@ -1,11 +1,10 @@
-import "./App.scss";
-import { useReducer } from "react";
+import("./App.scss");
+import { useReducer, lazy } from "react";
 
-import Prompt from "./components/Prompt";
+const Prompt = lazy(() => import("./components/Prompt"));
 
-import exec from "./utils/virtualFS/bin";
-
-const { default: fileSystem } = require("./utils/fileSystem");
+const exec = require("./utils/virtualFS/bin");
+const fileSystem = require("./utils/fileSystem");
 const parseArgs = require("./utils/argsParser");
 const uuid = require("uuid");
 
@@ -21,6 +20,7 @@ const panicResponse = {
 	user: "void",
 	cwd: "void",
 };
+
 function execute(state, action) {
 	// quotes under quotes, double quotes to close args and escapes are not supported right now
 	const parsedCommand = parseArgs(action.command);
@@ -49,7 +49,7 @@ function App() {
 	try {
 		fileSys = new fileSystem();
 	} catch (e) {
-		console.log(e)
+		console.log(e);
 		return (
 			<div className="terminal-container">
 				<ul>

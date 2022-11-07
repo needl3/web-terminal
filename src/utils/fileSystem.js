@@ -35,7 +35,7 @@ const fileTemplate = (user, permission, file) => {
 		content: file || "",
 	};
 };
-export default function fileSystem() {
+function fileSystem() {
 	// To create a starting point in filesystem
 	// All of the files are children of /
 	let _root = {
@@ -414,3 +414,5 @@ export default function fileSystem() {
 		editNode,
 	};
 }
+
+module.exports = fileSystem

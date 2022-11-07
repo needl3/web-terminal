@@ -24,7 +24,7 @@ function cat(argv, state) {
 					(file.properties.permissions[1] === "r" &&
 						file.properties.owner === state.user) ||
 					(file.properties.permissions[4] === "r" &&
-						file.properties.owner !== user)
+						file.properties.owner !== state.user)
 				)
 					returnState.message = file.content;
 				else
